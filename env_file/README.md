@@ -10,15 +10,18 @@
 <br>
 <br>
 
+<a name="about"></a>
 
-## About <a name="about"></a>
+## About 
 Module to set or delete environment files permanently.\
 Makes use of the */etc/environment* file
 
 <br>
 <br>
 
-## Supported systems <a name="supsys"></a>
+<a name="supsys"></a>
+
+## Supported systems
 Currently supports following operating systems:
 * Debian
 * Ubuntu
@@ -28,7 +31,9 @@ Currently supports following operating systems:
 <br>
 <br>
 
-## General <a name="general"></a>
+<a name="general"></a>
+
+## General
 **module:** env_file \
 **author:** @DKribl \
 **version_added:** 2.3 \
@@ -37,7 +42,9 @@ Currently supports following operating systems:
 <br>
 <br>
 
-## Options <a name="options"></a>
+<a name="options"></a>
+
+## Options
 
 parameter | required | default | choices | comments
 --------- | -------- | ------- | ------- | --------
@@ -49,7 +56,9 @@ force | no | yes | yes <br> no | overwrite existing variable with new content
 <br>
 <br>
 
-## Examples <a name="examples"></a>
+<a name="examples"></a>
+
+## Examples
 ```
 - env_file:
     name: http_proxy
