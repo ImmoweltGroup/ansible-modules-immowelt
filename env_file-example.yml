@@ -1,0 +1,48 @@
+- hosts: localhost
+  tasks:
+    - name: set var foo
+      env_file: 
+        name: "foo"
+        value: "bar"
+        state: present
+        reload: no
+
+    - name: set var test
+      env_file: 
+        name: "test"
+        value: "test"
+        state: present
+
+    - name: reload envfile
+      env_file: 
+        state: reloaded
+
+    - name: del a non existing var
+      env_file: 
+        name: "bar"
+        state: absent
+        reload: no
+
+    - name: create a var which exists already with same content
+      env_file:
+        name: "foo"
+        value: "bar"
+        state: present
+
+    - name: create a var which exists already with different content
+      env_file:
+        name: "foo"
+        value: "foo"
+        state: present
+
+    - name: delete var which exists already
+      env_file:
+        name: "foo"
+        state: absent
+  
+    - name: add existing variable with different content and fail bc force is set to no
+      env_file:
+        name: "test"
+        value: "foobar"
+        force: no
+    
