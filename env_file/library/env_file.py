@@ -83,17 +83,17 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils._text import to_bytes
 
 
-ENVFILE = "/etc/environment"
+ENVFILE = '/etc/environment'
 
 
 def get_diff(before, after):
     before_d = {}
     for k, v in before.items():
-        before_d[k] = v.replace('"', '').replace("\n", "")
+        before_d[k] = v.replace('"', '').replace('\n', '')
 
     after_d = {}
     for k, v in after.items():
-        after_d[k] = v.replace('"', '').replace("\n", "")
+        after_d[k] = v.replace('"', '').replace('\n', '')
 
     diff = {'before': before_d, 'after': after_d}
     return diff
@@ -107,14 +107,16 @@ def read_environment(module):
             try:
                 line_text = to_text(line)
             except UnicodeError:
-                module.fail_json(msg="There was an error converting content of {0} as binary to text: {1}".format(ENVFILE, get_exception()))
+                module.fail_json(msg='There was an error \
+                converting content of {0} as binary to text: {1}'.format(ENVFILE, get_exception()))
             try:
                 (k, v) = line_text.split('=')
             except (ValueError, UnboundLocalError):
                 if get_exception() == ValueError:
                     pass
                 else:
-                    module.fail_json(msg="There was an error reading the environment vars in {0}. Is your file corrupted?".format(ENVFILE))
+                    module.fail_json(msg='There was an error reading the environment vars in {0}.\
+                    Is your file corrupted?'.format(ENVFILE))
             d[k] = v
     return d
 
@@ -126,9 +128,10 @@ def delete_unnescessary_newlines(module):
             try:
                 j = to_text(l)
             except UnicodeError:
-                module.fail_json(msg="There was an error converting content of {0} as binary to text: {1}".format(ENVFILE, get_exception()))
-            if j == "\n":
-                b_data[i] = to_bytes("")
+                module.fail_json(msg='There was an error \
+                converting content of {0} as binary to text: {1}'.format(ENVFILE, get_exception()))
+            if j == '\n':
+                b_data[i] = to_bytes('')
         with open(ENVFILE, 'wb') as f:
             for line in b_data:
                 f.write(line)
@@ -138,12 +141,12 @@ def delete_unnescessary_newlines(module):
 def is_key_and_value_present(module, name, value, force):
     d = read_environment(module)
     if name in d:
-        if d[name].replace('"', "").replace('\n', '') == value:
+        if d[name].replace('"', '').replace('\n', '') == value:
             return True
         else:
             if not force:
-                module.fail_json(msg="There is already an environment variable called '{0}' but its content is not '{1}'. \
-                If you still want to add it use the 'force: yes' parameter".format(name, value))
+                module.fail_json(msg='There is already an environment variable called \'{0}\' but its content is not \'{1}\'. \
+                If you still want to add it use the \'force: yes\' parameter'.format(name, value))
             else:
                 return False
     else:
@@ -157,15 +160,15 @@ def is_key_present(module, name):
 
 def reload_environment(module):
     try:
-        os.system("source {0}".format(ENVFILE))
+        os.system('source {0}'.format(ENVFILE))
     except Exception:
-        module.fail_json(changed=False, msg="Failed to source {0}: {1}".format(ENVFILE, get_exception()))
+        module.fail_json(changed=False, msg='Failed to source {0}: {1}'.format(ENVFILE, get_exception()))
     module.exit_json(changed=True)
 
 
 def set_environment(module, name, value, reloaded, force):
     if not os.path.exists(ENVFILE):
-        module.fail_json(changed=False, msg="OS may not be supported because {0} is not present".format(ENVFILE))
+        module.fail_json(changed=False, msg='OS may not be supported because {0} is not present'.format(ENVFILE))
     if is_key_and_value_present(module, name, value, force):
         module.exit_json(changed=False)
 
@@ -177,7 +180,7 @@ def set_environment(module, name, value, reloaded, force):
         f = open(ENVFILE, 'ab')
         f.write(to_bytes('{0}="{1}"\n'.format(name, value)))
     except Exception:
-        module.fail_json(changed=False, msg="Failed to update environment file: {0}".format(get_exception()))
+        module.fail_json(changed=False, msg='Failed to update environment file: {0}'.format(get_exception()))
     finally:
         f.close()
 
@@ -187,16 +190,16 @@ def set_environment(module, name, value, reloaded, force):
 
     if reloaded:
         try:
-            os.system("source {0}".format(ENVFILE))
+            os.system('source {0}'.format(ENVFILE))
         except Exception:
-            module.fail_json(changed=False, msg="Failed to source {0}: {1}".format(ENVFILE, get_exception()))
+            module.fail_json(changed=False, msg='Failed to source {0}: {1}'.format(ENVFILE, get_exception()))
 
     module.exit_json(changed=True, diff=diff)
 
 
 def del_environment(module, name, reloaded):
     if not os.path.exists(ENVFILE):
-        module.fail_json(changed=False, msg="OS may not be supported because {0} is not present".format(ENVFILE))
+        module.fail_json(changed=False, msg='OS may not be supported because {0} is not present'.format(ENVFILE))
 
     if not is_key_present(module, name):
         module.exit_json(changed=False)
@@ -211,11 +214,11 @@ def del_environment(module, name, reloaded):
             try:
                 d.pop(name, None)
             except KeyError:
-                module.fail_json(msg="An undefined exception occured: {0}".format(get_exception()))
+                module.fail_json(msg='An undefined exception occured: {0}'.format(get_exception()))
 
             with open(ENVFILE, 'wb') as f:
                 for k, v in d.items():
-                    f.write(to_bytes("{0}={1}\n".format(k, v)))
+                    f.write(to_bytes('{0}={1}\n'.format(k, v)))
 
             delete_unnescessary_newlines(module)
         else:
@@ -229,9 +232,9 @@ def del_environment(module, name, reloaded):
 
     if reloaded:
         try:
-            os.system("source {0}".format(ENVFILE))
+            os.system('source {0}'.format(ENVFILE))
         except Exception:
-            module.fail_json(msg="Failed to source {0}: {1}".format(ENVFILE, get_exception()))
+            module.fail_json(msg='Failed to source {0}: {1}'.format(ENVFILE, get_exception()))
 
     module.exit_json(changed=True, diff=diff)
 
@@ -247,9 +250,9 @@ def main():
         ),
         supports_check_mode=True,
         required_if=[
-            ["state", "present", ["key", "value"]],
-            ["state", "absent", ["key"]],
-            ["state", "reloaded", []]
+            ['state', 'present', ['key', 'value']],
+            ['state', 'absent', ['key']],
+            ['state', 'reloaded', []]
         ])
     try:
         name = module.params['name']
@@ -261,29 +264,29 @@ def main():
     state = module.params['state']
     force = module.params['force']
 
-    if module.check_mode and state == "present":
+    if module.check_mode and state == 'present':
         if is_key_and_value_present(module, name, value, force):
             module.exit_json(changed=False)
         else:
             module.exit_json(changed=True)
 
-    elif module.check_mode and state == "absent":
+    elif module.check_mode and state == 'absent':
         if not is_key_and_value_present(module, name, value, force):
             module.exit_json(changed=False)
         else:
             module.exit_json(changed=True)
 
-    elif module.check_mode and state == "reloaded":
+    elif module.check_mode and state == 'reloaded':
         if os.access(ENVFILE, os.F_OK) and os.access(ENVFILE, os.R_OK):
             module.exit_json(changed=True)
         else:
             module.exit_json(changed=False)
 
-    if state == "present":
+    if state == 'present':
         set_environment(module, name, value, reloaded, force)
-    elif state == "absent":
+    elif state == 'absent':
         del_environment(module, name, reloaded)
-    elif state == "reloaded":
+    elif state == 'reloaded':
         reload_environment(module)
 
     module.exit_json()
