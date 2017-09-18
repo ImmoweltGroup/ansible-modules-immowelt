@@ -19,8 +19,9 @@
 <a name="about"></a>
 
 ## About 
-Module to set or delete environment files permanently.\
-Makes use of the */etc/environment* file
+Module to set or delete variables in an environment file.\
+Makes use of the */etc/environment* file. \
+Also supports reloading the environment file.
 
 <br>
 <br>
