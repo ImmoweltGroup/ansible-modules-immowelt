@@ -12,7 +12,7 @@ DOCUMENTATION = '''
 ---
 module: env_file
 author: Dennis Kribl (@dkribl)
-version_added: "2.3"
+version_added: "2.5"
 
 short_description: Manage environment file
 description:
@@ -73,7 +73,7 @@ EXAMPLES = '''
 
 '''
 
-RETURNS = '''#'''
+RETURN = '''#'''
 
 import os
 import copy
