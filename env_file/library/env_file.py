@@ -129,8 +129,12 @@ def is_key_present(module, name):
 
 
 def set_environment(module, name, value, force):
-    if not os.path.exists(ENVFILE):
-        module.fail_json(changed=False, msg="OS may not be supported because {0} is not present".format(ENVFILE))
+    if not os.path.exists(ENVFILE) and not force:
+        module.fail_json(changed=False, msg="OS may not be supported because {0} is not present. \
+        Use the 'force: yes' parameter to create the file".format(ENVFILE))
+    elif not os.path.exists(ENVFILE) and force:
+        open(ENVFILE, 'ab').close()
+
     if is_key_and_value_present(module, name, value, force):
         module.exit_json(changed=False)
 
@@ -153,9 +157,12 @@ def set_environment(module, name, value, force):
     module.exit_json(changed=True, diff=diff)
 
 
-def del_environment(module, name):
-    if not os.path.exists(ENVFILE):
-        module.fail_json(changed=False, msg="OS may not be supported because {0} is not present".format(ENVFILE))
+def del_environment(module, name, force):
+    if not os.path.exists(ENVFILE) and not force:
+        module.fail_json(changed=False, msg="OS may not be supported because {0} is not present. \
+        Use the 'force: yes' parameter to create the file".format(ENVFILE))
+    elif not os.path.exists(ENVFILE) and force:
+        open(ENVFILE, 'ab').close()
 
     if not is_key_present(module, name):
         module.exit_json(changed=False)
@@ -212,21 +219,35 @@ def main():
     force = module.params['force']
 
     if module.check_mode and state == "present":
-        if is_key_and_value_present(module, name, value, force):
-            module.exit_json(changed=False)
-        else:
-            module.exit_json(changed=True)
+        if not os.path.exists(ENVFILE) and not force:
+            module.fail_json(changed=False, msg="OS may not be supported because {0} is not present. \
+            Use the 'force: yes' parameter to create the file".format(ENVFILE))
+        elif not os.path.exists(ENVFILE) and force:
+            open(ENVFILE, 'ab').close()
+            if is_key_and_value_present(module, name, value, force):
+                os.remove(ENVFILE)
+                module.exit_json(changed=False)
+            else:
+                os.remove(ENVFILE)
+                module.exit_json(changed=True)
 
     elif module.check_mode and state == "absent":
-        if not is_key_and_value_present(module, name, value, force):
-            module.exit_json(changed=False)
-        else:
-            module.exit_json(changed=True)
+        if not os.path.exists(ENVFILE) and not force:
+            module.fail_json(changed=False, msg="OS may not be supported because {0} is not present. \
+            Use the 'force: yes' parameter to create the file".format(ENVFILE))
+        elif not os.path.exists(ENVFILE) and force:
+            open(ENVFILE, 'ab').close()
+            if not is_key_and_value_present(module, name, value, force):
+                os.remove(ENVFILE)
+                module.exit_json(changed=False)
+            else:
+                os.remove(ENVFILE)
+                module.exit_json(changed=True)
 
     if state == "present":
         set_environment(module, name, value, force)
     elif state == "absent":
-        del_environment(module, name)
+        del_environment(module, name, force)
 
     module.exit_json()
 
