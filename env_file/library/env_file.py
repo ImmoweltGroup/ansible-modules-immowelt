@@ -98,13 +98,14 @@ def read_environment(module):
             except UnicodeError:
                 module.fail_json(msg="There was an error converting content of {0} as binary to text: {1}".format(ENVFILE, get_exception()))
             try:
-                (k, v) = line_text.split('=')
+                if '=' in line_text and not line_text.startswith('#'):
+                    (k, v) = line_text.split('=')
+                    d[k] = v
             except (ValueError, UnboundLocalError):
                 if get_exception() == ValueError:
                     pass
                 else:
                     module.fail_json(msg="There was an error reading the environment vars in {0}. Is your file corrupted?".format(ENVFILE))
-            d[k] = v
     return d
 
 
