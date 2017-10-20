@@ -109,6 +109,38 @@ def read_environment(module):
     return d
 
 
+
+def read_environment_with_comments(module):
+    d = {}
+    l = []
+    index = 0
+    with open(ENVFILE, 'rb') as f:
+        b_data = f.read().splitlines()
+        for line in b_data:
+            index += 1
+            try:
+                line_text = to_text(line)
+            except UnicodeError:
+                module.fail_json(msg="There was an error converting content of {0} as binary to text: {1}".format(ENVFILE, get_exception()))
+            try:
+                if '=' in line_text and not line_text.startswith('#'):
+                    (k, v) = line_text.split('=')
+                    d[k] = v
+                    l.append(d)
+                    d = {}
+                elif line_text.startswith('#'):
+                    l.append(line_text)
+                elif not line_text.startswith(''):
+                    module.fail_json(msg="There was an error reading the environment vars in {0}. Is your file corrupted?".format(ENVFILE))
+
+            except (ValueError, UnboundLocalError):
+                if get_exception() == ValueError:
+                    pass
+                else:
+                    module.fail_json(msg="There was an error reading the environment vars in {0}. Is your file corrupted?".format(ENVFILE))
+    return l
+
+
 def is_key_and_value_present(module, name, value, force):
     d = read_environment(module)
     if name in d:
@@ -168,22 +200,22 @@ def del_environment(module, name, force):
     if not is_key_present(module, name):
         module.exit_json(changed=False)
 
-    d = read_environment(module)
+    if module._diff:
+        d1 = read_environment(module)
 
+    l = read_environment_with_comments(module)
     _, tmpfile = tempfile.mkstemp(dir=os.path.dirname(ENVFILE))
 
-    if module._diff:
-        d1 = copy.deepcopy(d)
+    for j in l:
+        if isinstance(j, dict):
+            if not j.get(name):
+                with open(tmpfile, 'ab') as f:
+                    for k, v in j.items():
+                        f.write(to_bytes("{0}={1}\n".format(k, v)))
+        else:
+            with open(tmpfile, 'ab') as f:
+                f.write('{0}\n'.format(j))
 
-    if d.get(name):
-        try:
-            d.pop(name, None)
-        except KeyError:
-            module.fail_json(msg="An undefined exception occured: {0}".format(get_exception()))
-
-        with open(tmpfile, 'wb') as f:
-            for k, v in d.items():
-                f.write(to_bytes("{0}={1}\n".format(k, v)))
     try:
         module.atomic_move(tmpfile, ENVFILE)
     except IOError:
