@@ -21,7 +21,6 @@
 ## About 
 Module to set or delete variables in an environment file.\
 Makes use of the */etc/environment* file. \
-Also supports reloading the environment file.
 
 <br>
 <br>
@@ -57,8 +56,7 @@ parameter | required | default | choices | comments
 --------- | -------- | ------- | ------- | --------
 key <br> *(aliases: name)* | yes | None | | environment variable key e.g. <br> * JAVA_HOME <br> * http_proxy ...
 value | when state = present | None | | value for defined key
-state | yes | present | present <br> absent <br> reloaded | present: adds the environment variable <br> absent: deletes the environment variable <br> reloaded: sources the env file
-reload | no | no | yes <br> no | source the environment file
+state | yes | present | present <br> absent | present: adds the environment variable <br> absent: deletes the environment variable
 force | no | yes | yes <br> no | overwrite existing variable with new content
 <br>
 <br>
@@ -71,15 +69,11 @@ force | no | yes | yes <br> no | overwrite existing variable with new content
     name: http_proxy
     value: 127.0.0.1
     state: present
-    reload: yes
 
 - env_file:
     key: ftp_proxy
     state: absent
-    reload: true
 
-- env_file:
-    state: reloaded
 ```
 <br>
 <br>
